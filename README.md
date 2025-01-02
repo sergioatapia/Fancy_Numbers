@@ -4,8 +4,8 @@
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/Shogun89/fancy_job
-cd fancy_job
+git clone https://github.com/teddyhabtamu/daily_task.git
+cd daily_task
 ```
 
 2. Run the script:
