@@ -3,86 +3,47 @@ import os
 import random
 import subprocess
 from datetime import datetime
+import sys
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
+def p():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-
-def read_number():
+def r():
     with open('number.txt', 'r') as f:
         return int(f.read().strip())
 
-
-def write_number(num):
+def w(n):
     with open('number.txt', 'w') as f:
-        f.write(str(num))
+        f.write(str(n))
 
-
-def git_commit():
-    # Stage the changes
+def c():
     subprocess.run(['git', 'add', 'number.txt'])
+    subprocess.run(['git', 'commit', '-m', f"Update {datetime.now().strftime('%Y%m%d')}"])
 
-    # Create commit with current date
-    date = datetime.now().strftime('%Y-%m-%d')
-    commit_message = f"Update number: {date}"
-    subprocess.run(['git', 'commit', '-m', commit_message])
+def push():
+    subprocess.run(['git', 'push'], capture_output=True, text=True)
 
-
-def git_push():
-    # Push the committed changes to GitHub
-    result = subprocess.run(['git', 'push'], capture_output=True, text=True)
-    if result.returncode == 0:
-        print("Changes pushed to GitHub successfully.")
-    else:
-        print("Error pushing to GitHub:")
-        print(result.stderr)
-
-
-def update_cron_with_random_time():
-    # Generate random hour (0-23) and minute (0-59)
-    random_hour = random.randint(0, 23)
-    random_minute = random.randint(0, 59)
-
-    # Define the new cron job command
-    new_cron_command = f"{random_minute} {random_hour} * * * cd {script_dir} && python3 {os.path.join(script_dir, 'update_number.py')}\n"
-
-    # Get the current crontab
-    cron_file = "/tmp/current_cron"
-    os.system(f"crontab -l > {cron_file} 2>/dev/null || true")  # Save current crontab, or create a new one if empty
-
-    # Update the crontab file
-    with open(cron_file, "r") as file:
-        lines = file.readlines()
-
-    with open(cron_file, "w") as file:
-        for line in lines:
-            # Remove existing entry for `update_number.py` if it exists
-            if "update_number.py" not in line:
-                file.write(line)
-        # Add the new cron job at the random time
-        file.write(new_cron_command)
-
-    # Load the updated crontab
-    os.system(f"crontab {cron_file}")
-    os.remove(cron_file)
-
-    print(f"Cron job updated to run at {random_hour}:{random_minute} tomorrow.")
+def cron():
+    h, m = random.randint(0, 23), random.randint(0, 59)
+    cmd = f"{m} {h} * * * cd {os.getcwd()} && python3 {os.path.basename(__file__)}\n"
+    temp = "/tmp/cron_temp"
+    os.system(f"crontab -l > {temp} 2>/dev/null || true")
+    with open(temp, "r") as f:
+        lines = [line for line in f if "update_number.py" not in line]
+    with open(temp, "a") as f:
+        f.write(cmd)
+    os.system(f"crontab {temp}")
+    os.remove(temp)
 
 def main():
+    p()
     try:
-        current_number = read_number()
-        new_number = current_number + 1
-        write_number(new_number)
-
-        git_commit()
-        git_push()
-
-        update_cron_with_random_time()
-
+        w(r() + 1)
+        c()
+        push()
+        cron()
     except Exception as e:
-        print(f"Error: {str(e)}")
-        exit(1)
-
+        sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    main()
