@@ -38,3 +38,19 @@ The script will increment the number in `number.txt` and commit the change to gi
 By running this you will be able get a fancy streak on your github profile and get a job.
 
 ![How to get a job](get_a_job.jpg)
+
+## A visual commitment
+
+To write messages, or draw patterns, in the commit history you need to install
+
+```
+python -m pip install git+https://gitlab.com/drj11/pypng@pypng-0.20220715.0
+```
+
+and run with
+
+```
+update_number.py -f hireme.png
+```
+
+Only one format of PNG is currently (ever?) supported, so ensure it's correct by using the `-t` flag, which will output the results for 2025.
